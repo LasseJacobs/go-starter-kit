@@ -1,5 +1,13 @@
-database:
-  dsn: "root:superdb@(localhost:3306)/starterkit?parseTime=true&multiStatements=true"
+name: "app"
+description: "template for an app"
 
 server:
-  port: :8080
+  port: ":8080"
+
+database:
+  driver: "postgres"
+  url: "postgres://postgres:$password@localhost:5432/content"
+  password: "postgres"
+
+logging:
+  level: "debug"

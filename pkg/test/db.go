@@ -1,5 +1,6 @@
 package test
 
+/*
 import (
 	"context"
 	"fmt"
@@ -86,3 +87,4 @@ func SetupMySQLContainer(logger log.Logger) (func(), *sqlx.DB, error) {
 
 	return closeContainer, db, nil
 }
+*/
