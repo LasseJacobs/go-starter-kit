@@ -50,6 +50,8 @@ func NewAPIWithVersion(conf *config.Config, db storage.Connection, version strin
 	r.Route("/v1", func(r chi.Router) {
 		//r.Use(mid.APIVersionCtx("v1"))
 		//user.RegisterHandlers(r, db, logger, validate)
+		r.Get("/story/{storyid}", api.getStory)
+		r.Post("/story", api.postStory)
 	})
 
 	corsHandler := cors.New(cors.Options{

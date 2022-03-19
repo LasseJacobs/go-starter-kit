@@ -6,7 +6,7 @@ server:
 
 database:
   driver: "postgres"
-  url: "postgres://postgres:$password@localhost:5432/content"
+  url: "postgres://postgres:$password@localhost:5432/app?sslmode=disable"
   password: "postgres"
 
 logging:

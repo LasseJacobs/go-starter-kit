@@ -1,7 +1,13 @@
 
+CREATE DATABASE app;
+
+GRANT ALL PRIVILEGES ON DATABASE app TO postgres;
+
+\connect app
+
 CREATE SCHEMA IF NOT EXISTS content;
 
-CREATE TABLE IF NOT EXISTS stories (
+CREATE TABLE IF NOT EXISTS content.stories (
    id           varchar(32) CONSTRAINT pkey PRIMARY KEY,
    title        varchar(40) NOT NULL,
    author       varchar(40) DEFAULT 'unknown',

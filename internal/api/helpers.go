@@ -6,6 +6,8 @@ import (
 	"github.com/LasseJacobs/go-starter-kit/pkg/model"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"io"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -52,6 +54,12 @@ var statusMap = map[int]string{
 	505: "HTTP Version Not Supported",
 }
 
+func readModel(r *http.Request, m interface{}) error {
+	//todo: why is this defer here?
+	defer io.Copy(ioutil.Discard, r.Body) //nolint:errcheck
+	return json.NewDecoder(r.Body).Decode(m)
+}
+
 func sendJSON(w http.ResponseWriter, status int, obj interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	b, err := json.Marshal(obj)
@@ -69,7 +77,7 @@ func sendJSON(w http.ResponseWriter, status int, obj interface{}) {
 func sendError(w http.ResponseWriter, err error) {
 	//var errorID = "A011"
 	switch e := err.(type) {
-	case *model.UserNotFoundError:
+	case *model.StoryNotFoundError:
 		sendHttpError(w, http.StatusNotFound, e.Error())
 	default:
 		// hide real error details from response to prevent info leaks
