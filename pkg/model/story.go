@@ -14,6 +14,10 @@ type Story struct {
 	PublicationDate time.Time `json:"originDate" db:"origin_date"`
 }
 
+func (s *Story) Vote() {
+	s.Votes++
+}
+
 func ValidateStory(story *Story) error {
 	//TODO: improve this
 	if story.ID == "" {

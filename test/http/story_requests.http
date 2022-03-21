@@ -2,7 +2,7 @@ POST http://localhost:8080/v1/story
 Content-Type: application/json
 
 {
-  "id": "AEEtvd3",
+  "id": "AEEtvd4",
   "title": "Standard Go Project Layout",
   "author": "GoLang",
   "votes": 12,
@@ -10,3 +10,5 @@ Content-Type: application/json
 }
 
 ###
+
+GET http://localhost:8080/v1/story?page=1&limit=2

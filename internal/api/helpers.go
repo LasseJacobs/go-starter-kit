@@ -78,16 +78,16 @@ func sendError(w http.ResponseWriter, err error) {
 	//var errorID = "A011"
 	switch e := err.(type) {
 	case *model.StoryNotFoundError:
-		sendHttpError(w, http.StatusNotFound, e.Error())
+		sendHttpError(w, http.StatusNotFound, e)
 	default:
 		// hide real error details from response to prevent info leaks
-		sendHttpError(w, http.StatusInternalServerError, e.Error())
+		sendHttpError(w, http.StatusInternalServerError, e)
 	}
 }
 
-func sendHttpError(w http.ResponseWriter, status int, errorId string) {
+func sendHttpError(w http.ResponseWriter, status int, err error) {
 	w.WriteHeader(status)
-	if _, writeErr := w.Write([]byte(fmt.Sprintf(`{"code":%d,"msg":"%s","error_message":"%s"}`, status, statusMap[status], errorId))); writeErr != nil {
+	if _, writeErr := w.Write([]byte(fmt.Sprintf(`{"code":%d,"msg":"%s","error_message":"%s"}`, status, statusMap[status], err.Error()))); writeErr != nil {
 		logrus.WithError(writeErr).Error("Error writing generic error message")
 	}
 }

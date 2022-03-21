@@ -19,6 +19,23 @@ func FindStoryById(tx storage.Connection, id string) (*model.Story, error) {
 	return &story, err
 }
 
+// PageStories returns a list of stories, paginated
+//todo: I am not sure this query is 100% correct; and how do we go back?
+func PageStories(tx storage.Connection, p model.Pagination) (*[]model.Story, error) {
+	var stories []model.Story
+	err := tx.Select(&stories, `SELECT id, title, author, votes, url, origin_date 
+		FROM content.stories
+		ORDER BY transaction_date DESC
+		LIMIT $1 OFFSET $2`, p.PerPage, p.Offset())
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, model.StoryNotFoundError{}
+		}
+		return nil, errors.Wrap(err, "failed to find story")
+	}
+	return &stories, err
+}
+
 func CreateStory(tx storage.Connection, story *model.Story) error {
 	_, err := tx.NamedExec("INSERT INTO content.stories (id, title, author, votes, url, origin_date) "+
 		"VALUES (:id, :title, :author, :votes, :url, :origin_date)", story)

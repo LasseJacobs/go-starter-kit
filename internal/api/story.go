@@ -4,6 +4,7 @@ import (
 	"github.com/LasseJacobs/go-starter-kit/internal/functions"
 	"github.com/LasseJacobs/go-starter-kit/pkg/model"
 	"github.com/go-chi/chi/v5"
+	"math"
 	"net/http"
 )
 
@@ -17,6 +18,20 @@ func (a *API) getStory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sendJSON(w, http.StatusOK, story)
+}
+
+// getStory expects {storyid} parameter, return story matching that id
+func (a *API) getStories(w http.ResponseWriter, r *http.Request) {
+	var page = stringToInt(r.URL.Query().Get("page"), 1, math.MaxInt64, 1)
+	var limit = stringToInt(r.URL.Query().Get("limit"), 0, 100, 25)
+
+	stories, err := functions.PageStories(a.db, model.Pagination{Page: int32(page), PerPage: int32(limit)})
+	if err != nil {
+		sendError(w, err)
+		return
+	}
+
+	sendJSON(w, http.StatusOK, stories)
 }
 
 // postStory inserts a story into the database if it does not exist yet returning 201, 200 if existing

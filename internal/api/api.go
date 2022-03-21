@@ -52,6 +52,7 @@ func NewAPIWithVersion(conf *config.Config, db storage.Connection, version strin
 		//user.RegisterHandlers(r, db, logger, validate)
 		r.Get("/story/{storyid}", api.getStory)
 		r.Post("/story", api.postStory)
+		r.Get("/story", api.getStories)
 	})
 
 	corsHandler := cors.New(cors.Options{
