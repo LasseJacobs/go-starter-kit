@@ -23,6 +23,8 @@ func App() *cli.App {
 		},
 		Commands: []cli.Command{
 			serveCmd,
+			versionCmd,
+			adminCmd,
 		},
 	}
 
