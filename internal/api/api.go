@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"fmt"
+	"github.com/LasseJacobs/go-metrics-prometheus/prometheus"
 	"github.com/LasseJacobs/go-starter-kit/internal/config"
 	"github.com/LasseJacobs/go-starter-kit/internal/middleware"
 	"github.com/LasseJacobs/go-starter-kit/internal/storage"
@@ -31,8 +33,8 @@ func NewAPIWithVersion(conf *config.Config, db storage.Connection, version strin
 	r := chi.NewRouter()
 
 	r.Use(chim.Logger)
-	r.Use(chim.Recoverer)
 	r.Use(middleware.ResponseLatency)
+	r.Use(chim.Recoverer)
 
 	// homepage welcome page
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +43,7 @@ func NewAPIWithVersion(conf *config.Config, db storage.Connection, version strin
 
 	// register health check route
 	r.Get("/health", api.healthCheck)
+	r.Get("/metrics", prometheus.MakePrometheusHandler(nil).ServeHTTP)
 
 	// example:
 	r.Get("/error", api.failureCheck)
@@ -68,8 +71,9 @@ func NewAPIWithVersion(conf *config.Config, db storage.Connection, version strin
 func (a *API) Start() error {
 	serverErrors := make(chan error, 1)
 
+	address := fmt.Sprintf(":%s", a.config.Server.Port)
 	server := http.Server{
-		Addr:    a.config.Server.Port,
+		Addr:    address,
 		Handler: a.handler,
 	}
 

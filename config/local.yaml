@@ -2,12 +2,10 @@ name: "app"
 description: "template for an app"
 
 server:
-  port: ":8080"
+  port: "8080"
 
 database:
-  driver: "postgres"
-  url: "postgres://postgres:$password@localhost:5432/app?sslmode=disable"
+  user: "postgres"
   password: "postgres"
-
-logging:
-  level: "debug"
+  host: "localhost"
+  database: "app"

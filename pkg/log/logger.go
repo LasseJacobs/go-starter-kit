@@ -11,19 +11,19 @@ type Logger struct {
 }
 
 type LoggingConfig struct {
-	Level            string                 `yaml:"level"`
-	File             string                 `yaml:"file"`
+	Level            string                 `yaml:"level" env:"LEVEL" env-default:"DEBUG"`
+	File             string                 `yaml:"file" env:"FILE"`
 	DisableColors    bool                   `split_words:"true" yaml:"disable_colors"`
 	QuoteEmptyFields bool                   `split_words:"true" yaml:"quote_empty_fields"`
-	TSFormat         string                 `yaml:"ts_format"`
-	Fields           map[string]interface{} `yaml:"fields"`
+	TSFormat         string                 `yaml:"ts_format" env:"TS_FORMAT"`
+	Fields           map[string]interface{} `yaml:"fields" env:"FIELDS"`
 }
 
 func New() *Logger {
 	return &Logger{logrus.NewEntry(logrus.StandardLogger())}
 }
 
-func ConfigureLogging(config *LoggingConfig) (*Logger, error) {
+func ConfigureLogging(config LoggingConfig) (*Logger, error) {
 	logger := logrus.New()
 
 	tsFormat := time.RFC3339Nano

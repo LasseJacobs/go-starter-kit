@@ -77,7 +77,7 @@ type Updater interface {
 //
 //	 var cfg ConfigDatabase
 //
-//	 err := cleanenv.ReadConfig("config.yml", &cfg)
+//	 err := cleanenv.ReadConfig("config.yml", "PREFIX", &cfg)
 //	 if err != nil {
 //	     ...
 //	 }
@@ -89,17 +89,17 @@ func ReadConfig(path string, appname string, cfg interface{}) error {
 		}
 	}
 
-	return readEnvVars(cfg, appname, false)
+	return readEnvVars(cfg, toPrefix(appname), false)
 }
 
 // ReadEnv reads environment variables into the structure.
 func ReadEnv(cfg interface{}, appname string) error {
-	return readEnvVars(cfg, appname, false)
+	return readEnvVars(cfg, toPrefix(appname), false)
 }
 
 // UpdateEnv rereads (updates) environment variables in the structure.
 func UpdateEnv(cfg interface{}, appname string) error {
-	return readEnvVars(cfg, appname, true)
+	return readEnvVars(cfg, toPrefix(appname), true)
 }
 
 // parseFile parses configuration file according to it's extension
@@ -161,13 +161,13 @@ func (sm *structMeta) isFieldValueZero() bool {
 }
 
 // readStructMetadata reads structure metadata (types, tags, etc.)
-func readStructMetadata(cfgRoot interface{}) ([]structMeta, error) {
+func readStructMetadata(cfgRoot interface{}, rootPrefix string) ([]structMeta, error) {
 	type cfgNode struct {
 		Val    interface{}
 		Prefix string
 	}
 
-	cfgStack := []cfgNode{{cfgRoot, ""}}
+	cfgStack := []cfgNode{{cfgRoot, rootPrefix}}
 	metas := make([]structMeta, 0)
 
 	for i := 0; i < len(cfgStack); i++ {
@@ -260,7 +260,7 @@ func readStructMetadata(cfgRoot interface{}) ([]structMeta, error) {
 
 // readEnvVars reads environment variables to the provided configuration structure
 func readEnvVars(cfg interface{}, prefix string, update bool) error {
-	metaInfo, err := readStructMetadata(cfg)
+	metaInfo, err := readStructMetadata(cfg, prefix)
 	if err != nil {
 		return err
 	}
@@ -459,8 +459,8 @@ func parseMap(valueType reflect.Type, value string, sep string, layout *string) 
 
 // GetDescription returns a description of environment variables.
 // You can provide a custom header text.
-func GetDescription(cfg interface{}, headerText *string) (string, error) {
-	meta, err := readStructMetadata(cfg)
+func GetDescription(cfg interface{}, prefix string, headerText *string) (string, error) {
+	meta, err := readStructMetadata(cfg, prefix)
 	if err != nil {
 		return "", err
 	}
@@ -501,13 +501,13 @@ func GetDescription(cfg interface{}, headerText *string) (string, error) {
 // Usage returns a configuration usage help.
 // Other usage instructions can be wrapped in and executed before this usage function.
 // The default output is STDERR.
-func Usage(cfg interface{}, headerText *string, usageFuncs ...func()) func() {
-	return FUsage(os.Stderr, cfg, headerText, usageFuncs...)
+func Usage(cfg interface{}, appName string, headerText *string, usageFuncs ...func()) func() {
+	return FUsage(os.Stderr, cfg, appName, headerText, usageFuncs...)
 }
 
 // FUsage prints configuration help into the custom output.
 // Other usage instructions can be wrapped in and executed before this usage function
-func FUsage(w io.Writer, cfg interface{}, headerText *string, usageFuncs ...func()) func() {
+func FUsage(w io.Writer, cfg interface{}, appName string, headerText *string, usageFuncs ...func()) func() {
 	return func() {
 		for _, fn := range usageFuncs {
 			fn()
@@ -515,7 +515,7 @@ func FUsage(w io.Writer, cfg interface{}, headerText *string, usageFuncs ...func
 
 		_ = flag.Usage
 
-		text, err := GetDescription(cfg, headerText)
+		text, err := GetDescription(cfg, toPrefix(appName), headerText)
 		if err != nil {
 			return
 		}
@@ -563,4 +563,11 @@ func isZero(v reflect.Value) bool {
 		// later, as a default value doesn't makes sense here.
 		panic(fmt.Sprintf("Value.IsZero: %v", v.Kind()))
 	}
+}
+
+func toPrefix(name string) string {
+	if name == "" {
+		return name
+	}
+	return name + "_"
 }

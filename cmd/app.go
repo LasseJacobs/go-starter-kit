@@ -32,7 +32,7 @@ func App() *cli.App {
 // execWithConfig requires `config` flag is set
 func execWithConfig(c *cli.Context, fn func(c *cli.Context, conf *config.Config) error) error {
 	var configFile = c.GlobalString("config")
-	conf, err := config.Load(configFile)
+	conf, err := config.Load("APP", configFile)
 	if err != nil {
 		logrus.Fatalf("Failed to load configuration: %+v", err)
 	}

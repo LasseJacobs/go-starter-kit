@@ -306,7 +306,7 @@ func TestReadEnvVars(t *testing.T) {
 			}
 			defer os.Clearenv()
 
-			if err := readEnvVars(tt.cfg, false); (err != nil) != tt.wantErr {
+			if err := readEnvVars(tt.cfg, "", false); (err != nil) != tt.wantErr {
 				t.Errorf("wrong error behavior %v, wantErr %v", err, tt.wantErr)
 			}
 			if !reflect.DeepEqual(tt.cfg, tt.want) {
@@ -356,7 +356,7 @@ func TestReadEnvVarsTime(t *testing.T) {
 			}
 			defer os.Clearenv()
 
-			if err := readEnvVars(tt.cfg, false); (err != nil) != tt.wantErr {
+			if err := readEnvVars(tt.cfg, "", false); (err != nil) != tt.wantErr {
 				t.Errorf("wrong error behavior %v, wantErr %v", err, tt.wantErr)
 			}
 			if !reflect.DeepEqual(tt.cfg, tt.want) {
@@ -399,7 +399,7 @@ func TestReadEnvVarsWithPrefix(t *testing.T) {
 	}
 
 	var cfg Config
-	if err := readEnvVars(&cfg, false); err != nil {
+	if err := readEnvVars(&cfg, "", false); err != nil {
 		t.Fatal("failed to read env vars", err)
 	}
 
@@ -418,6 +418,41 @@ func TestReadEnvVarsWithPrefix(t *testing.T) {
 			Host:    "db3.host",
 			Port:    30000,
 			Logging: Logging{Debug: true},
+		},
+	}
+
+	if !reflect.DeepEqual(cfg, expected) {
+		t.Errorf("wrong data %v, want %v", cfg, expected)
+	}
+}
+
+func TestReadEnvVarsWithGlobalPrefix(t *testing.T) {
+	type Logging struct {
+		Debug bool `env:"DEBUG"`
+	}
+
+	type Config struct {
+		Name    string  `env:"NAME"`
+		Logging Logging `env-prefix:"LOGGING_"`
+	}
+
+	var env = map[string]string{
+		"PREFIX_NAME":          "db1.host",
+		"PREFIX_LOGGING_DEBUG": "true",
+	}
+	for k, v := range env {
+		os.Setenv(k, v)
+	}
+
+	var cfg Config
+	if err := readEnvVars(&cfg, "PREFIX_", false); err != nil {
+		t.Fatal("failed to read env vars", err)
+	}
+
+	var expected = Config{
+		Name: "db1.host",
+		Logging: Logging{
+			Debug: true,
 		},
 	}
 
@@ -486,7 +521,7 @@ func TestReadUpdateFunctions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := readEnvVars(tt.cfg, false); (err != nil) != tt.wantErr {
+			if err := readEnvVars(tt.cfg, "", false); (err != nil) != tt.wantErr {
 				t.Errorf("wrong error behavior %v, wantErr %v", err, tt.wantErr)
 			}
 			if !reflect.DeepEqual(tt.cfg, tt.want) {
@@ -561,24 +596,6 @@ array: [1, 2, 3]`,
 		},
 
 		{
-			name: "toml",
-			file: `
-number = 1
-float = 2.3
-string = "test"
-boolean = true
-
-array = [1, 2, 3]
-
-[object]
-one = 1
-two = 2`,
-			ext:     "toml",
-			want:    &wantConfig,
-			wantErr: false,
-		},
-
-		{
 			name:    "unknown",
 			file:    "-",
 			ext:     "",
@@ -624,82 +641,6 @@ two = 2`,
 			t.Error("expected error for invalid file path")
 		}
 	})
-}
-
-func TestParseFileEnv(t *testing.T) {
-	type dummy struct{}
-
-	tests := []struct {
-		name    string
-		rawFile string
-		has     map[string]string
-		want    map[string]string
-		wantErr bool
-	}{
-		{
-			name: "simple file",
-			has: map[string]string{
-				"TEST1": "aaa",
-				"TEST2": "bbb",
-				"TEST3": "ccc",
-			},
-			want: map[string]string{
-				"TEST1": "aaa",
-				"TEST2": "bbb",
-				"TEST3": "ccc",
-			},
-			wantErr: false,
-		},
-
-		{
-			name:    "empty file",
-			has:     map[string]string{},
-			want:    map[string]string{},
-			wantErr: false,
-		},
-
-		{
-			name:    "error",
-			rawFile: "-",
-			wantErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tmpFile, err := ioutil.TempFile(os.TempDir(), "*.env")
-			if err != nil {
-				t.Fatal("cannot create temporary file:", err)
-			}
-			defer os.Remove(tmpFile.Name())
-
-			var file string
-			if tt.rawFile == "" {
-				for key, val := range tt.has {
-					file += fmt.Sprintf("%s=%s\n", key, val)
-				}
-			} else {
-				file = tt.rawFile
-			}
-
-			text := []byte(file)
-			if _, err = tmpFile.Write(text); err != nil {
-				t.Fatal("failed to write to temporary file:", err)
-			}
-
-			var cfg dummy
-			if err = parseFile(tmpFile.Name(), &cfg); (err != nil) != tt.wantErr {
-				t.Errorf("wrong error behavior %v, wantErr %v", err, tt.wantErr)
-			}
-			for key, val := range tt.has {
-				if envVal := os.Getenv(key); err == nil && val != envVal {
-					t.Errorf("wrong value %s of var %s, want %s", envVal, key, val)
-				}
-			}
-
-			os.Clearenv()
-		})
-	}
 }
 
 func TestGetDescription(t *testing.T) {
@@ -822,7 +763,7 @@ func TestGetDescription(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetDescription(tt.cfg, tt.header)
+			got, err := GetDescription(tt.cfg, "", tt.header)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("wrong error behavior %v, wantErr %v", err, tt.wantErr)
 				return
@@ -911,7 +852,7 @@ func TestFUsage(t *testing.T) {
 				}(text))
 			}
 			var cfg testSingleEnv
-			FUsage(w, &cfg, tt.headerText, uFuncs...)()
+			FUsage(w, &cfg, "", tt.headerText, uFuncs...)()
 			gotRaw, _ := ioutil.ReadAll(w)
 			got := string(gotRaw)
 
@@ -1047,7 +988,7 @@ no-env: this
 			defer os.Clearenv()
 
 			var cfg config
-			if err = ReadConfig(tmpFile.Name(), &cfg); (err != nil) != tt.wantErr {
+			if err = ReadConfig(tmpFile.Name(), "", &cfg); (err != nil) != tt.wantErr {
 				t.Errorf("wrong error behavior %v, wantErr %v", err, tt.wantErr)
 			}
 			if err == nil && !reflect.DeepEqual(&cfg, tt.want) {

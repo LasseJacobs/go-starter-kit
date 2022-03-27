@@ -3,11 +3,11 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/LasseJacobs/go-starter-kit/internal/config"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
-	"strings"
 )
 
 type Database struct {
@@ -46,8 +46,9 @@ type Connection interface {
 	Close() error
 }
 
-func Dial(config *config.Database) (Connection, error) {
-	db, err := sqlx.Open(config.Driver, strings.Replace(config.URL, "$password", config.Password, 1))
+func Dial(config config.Database) (Connection, error) {
+	connectionString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", config.User, config.Password, config.Host, config.Port, config.Database, config.SSLMode)
+	db, err := sqlx.Open("postgres", connectionString)
 	if err != nil {
 		return nil, err
 	}

@@ -22,9 +22,14 @@ services:
     image: app
     build:
       context: .
-      dockerfile: dockerfile.api
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    environment:
+      APP_DB_USER: "postgres"
+      APP_DB_PASSWORD: "postgres"
+      APP_DB_HOST: "database"
+      APP_DB_DATABASE: "app"
     depends_on:
       - database
 
