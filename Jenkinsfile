@@ -26,7 +26,7 @@ pipeline {
                 sh "docker-compose up --no-build -d"
 
                 sleep(time:3,unit:"SECONDS")
-                sh "make tests-e2e"
+                sh "make test-e2e"
 
                 sh "docker-compose down -v"
             }

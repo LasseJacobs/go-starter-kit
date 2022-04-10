@@ -1,3 +1,5 @@
+#!/bin/bash
+
 curl -X POST  http://localhost:8080/v1/story \
 -H 'Content-Type: application/json' \
 --data \

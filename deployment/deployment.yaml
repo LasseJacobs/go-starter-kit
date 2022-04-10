@@ -19,3 +19,8 @@ spec:
           imagePullPolicy: Always
           command: ["app"]
           args: ["serve"]
+          environment:
+            APP_DB_USER: "postgres"
+            APP_DB_PASSWORD: "postgres"
+            APP_DB_HOST: "database"
+            APP_DB_DATABASE: "app"
