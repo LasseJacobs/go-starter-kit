@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gokit
+  namespace: micro
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gokit
+  template:
+    metadata:
+      labels:
+        app: gokit
+    spec:
+      containers:
+        - name: gokit
+          image: localhost:32000/gokit:$GIT_TAG
+          imagePullPolicy: Always
+          command: ["app"]
+          args: ["serve"]

@@ -20,7 +20,6 @@ func FindStoryById(tx storage.Connection, id string) (*model.Story, error) {
 }
 
 // PageStories returns a list of stories, paginated
-//todo: I am not sure this query is 100% correct; and how do we go back?
 func PageStories(tx storage.Connection, p model.Pagination) (*[]model.Story, error) {
 	var stories []model.Story
 	err := tx.Select(&stories, `SELECT id, title, author, votes, url, origin_date 

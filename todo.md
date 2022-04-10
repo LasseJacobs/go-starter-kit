@@ -9,8 +9,9 @@
 - docs
 - dockerfile                                              [done]
 - tests (http, ping-test, go test)
+  - https://github.com/DATA-DOG/go-sqlmock/releases/tag/v1.5.0
 - add metering to db calls + db metrics (connection pool, prom repo has example)
-
+- k8s yaml files
 
 **OPTIONAL**
 - clean up storage layer stuff

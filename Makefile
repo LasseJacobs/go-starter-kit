@@ -28,6 +28,9 @@ seed:
 test:
 	go test ./... -count=1
 
+test-e2e:
+	./test/http/story_requests.sh
+
 tidy:
 	go mod tidy
 	go mod vendor
