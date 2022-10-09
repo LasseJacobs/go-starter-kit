@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gokit
+  namespace: micro
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gokit
+  template:
+    metadata:
+      labels:
+        app: gokit
+    spec:
+      containers:
+        - name: gokit
+          image: localhost:32000/gokit:dd22e21
+          imagePullPolicy: Always
+          command: ["app"]
+          args: ["serve"]
+          environment:
+            APP_DB_USER: "postgres"
+            APP_DB_PASSWORD: "postgres"
+            APP_DB_HOST: "database"
+            APP_DB_DATABASE: "app"
